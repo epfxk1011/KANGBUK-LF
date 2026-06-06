@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>강북L&F 관리시스템</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f7;color:#1a1a1a;font-size:15px}
+.header{background:#fff;border-bottom:1px solid #e5e5e5;padding:0 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;height:52px}
+.header-title{font-weight:600;font-size:17px}
+.header-title span{color:#1a56db}
+.refresh-btn{background:none;border:none;font-size:22px;cursor:pointer;padding:8px}
+.content{max-width:720px;margin:0 auto;padding:16px 16px 80px}
+input[type=text],input[type=date],textarea,select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #ddd;font-size:15px;font-family:inherit;background:#fff;outline:none}
+input[type=text]:focus,input[type=date]:focus,textarea:focus,select:focus{border-color:#1a56db}
+textarea{resize:vertical;min-height:80px}
+.search-wrap{margin-bottom:12px}
+.clabel{font-size:12px;color:#888;margin-bottom:10px}
+.badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;white-space:nowrap}
+.b-별{background:#e8f0fe;color:#1a56db}
+.b-포{background:#e6f4ea;color:#1a7f37}
+.b-X{background:#fff8e1;color:#b45309}
+.b-etc{background:#f1f3f4;color:#555}
+.b-rental{background:#dcfce7;color:#166534;cursor:pointer}
+.sbadge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap}
+.s-강북{background:#e0f2fe;color:#0369a1}
+.s-로운{background:#f0fdf4;color:#166534}
+.s-코젠{background:#fdf4ff;color:#7e22ce}
+.ccard{background:#fff;border:1px solid #efefef;border-radius:14px;padding:16px;margin-bottom:12px;cursor:pointer}
+.ccard:active{background:#f8f8f8}
+.ccard-name{font-weight:700;font-size:16px}
+.ccard-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.ccard-item{background:#f8f9fa;border-radius:8px;padding:8px 10px;display:flex;align-items:flex-start;gap:6px}
+.ccard-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.ccard-ilabel{font-size:10px;color:#aaa;line-height:1}
+.ccard-ivalue{font-size:12px;font-weight:500;color:#1a1a1a;margin-top:2px;line-height:1.3;word-break:break-all}
+.ccard-wide{grid-column:1/-1}
+.back-btn{background:none;border:none;color:#888;font-size:14px;cursor:pointer;padding:0;margin-bottom:16px;font-family:inherit}
+.dheader{background:#fff;border:1px solid #efefef;border-radius:12px;padding:16px;margin-bottom:12px}
+.dname{font-size:20px;font-weight:600}
+.dsub{font-size:13px;color:#888;margin-top:2px;margin-bottom:10px}
+.phone-btn{display:inline-block;padding:10px 18px;border-radius:8px;border:1px solid #ddd;background:#f8f8f8;font-size:14px;color:#1a1a1a;text-decoration:none;margin-top:8px;margin-right:8px;margin-bottom:4px}
+.section{background:#fff;border:1px solid #efefef;border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.stitle{font-size:13px;font-weight:600;color:#888;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f0f0f0}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fitem{background:#f5f5f7;border-radius:8px;padding:8px 12px}
+.flabel{font-size:11px;color:#888}
+.fvalue{font-size:13px;font-weight:500;word-break:break-all}
+.ritem{padding:10px 0;border-bottom:1px solid #f0f0f0}
+.ritem:last-child{border-bottom:none}
+.repair-table{width:100%;border-collapse:collapse;font-size:12px}
+.repair-table th{background:#f5f5f7;color:#888;font-weight:500;padding:7px 8px;text-align:left;border-bottom:1px solid #eee;white-space:nowrap}
+.repair-table td{padding:8px 8px;border-bottom:1px solid #f5f5f7;vertical-align:top;word-break:break-all}
+.repair-table tr:last-child td{border-bottom:none}
+.repair-amt-red{color:#ef4444;font-weight:600}
+.repair-amt-blue{color:#1a56db;font-weight:600}
+.spinner{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:14px}
+.spin{width:36px;height:36px;border:3px solid #eee;border-top:3px solid #1a56db;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.page{display:none}.page.active{display:block}
+.form-group{margin-bottom:14px}
+.form-label{font-size:13px;font-weight:500;color:#555;margin-bottom:6px;display:block}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.btn{padding:13px 0;border-radius:10px;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;width:100%}
+.btn-primary{background:#1a56db;color:#fff}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-secondary{background:#f1f3f4;color:#555}
+.btn-row{display:flex;gap:10px;margin-top:6px}
+.add-btn{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:#1a56db;color:#fff;font-size:28px;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(26,86,219,.4);z-index:200;display:none;align-items:center;justify-content:center}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:720px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:20px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-title"><span>강북</span>L&F</div>
+  <button class="refresh-btn" onclick="loadData()">🔄</button>
+</div>
+<div class="content">
+
+  <div id="page-loading" class="page active">
+    <div class="spinner"><div class="spin"></div><div style="font-size:14px;color:#888">데이터 불러오는 중...</div></div>
+  </div>
+
+  <div id="page-error" class="page">
+    <div style="text-align:center;padding:60px 20px">
+      <div style="font-size:40px;margin-bottom:12px">⚠️</div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">데이터를 불러오지 못했습니다</div>
+      <div style="font-size:12px;color:#888;margin-bottom:20px" id="error-msg"></div>
+      <button onclick="loadData()" style="padding:14px 32px;border-radius:10px;border:1px solid #ddd;background:#fff;font-size:15px;cursor:pointer">다시 시도</button>
+    </div>
+  </div>
+
+  <div id="page-customers" class="page">
+    <div style="font-size:18px;font-weight:600;margin-bottom:14px">거래처 관리</div>
+    <input type="text" class="search-wrap" id="customer-search" placeholder="상호명, 대표자, 연락처, 모델명 검색..." oninput="renderCustomers()">
+    <div class="clabel" id="customer-count"></div>
+    <div id="customer-list"></div>
+    <button class="add-btn" id="add-btn" onclick="openAddModal()">+</button>
+  </div>
+
+  <div id="page-customer-detail" class="page">
+    <button class="back-btn" onclick="showPage('customers')">← 목록으로</button>
+    <div id="customer-detail-content"></div>
+  </div>
+
+</div>
+
+<!-- 거래처 추가/수정 모달 -->
+<div class="modal-overlay" id="customer-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">거래처 추가</div>
+    <input type="hidden" id="form-row">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">상호명 *</label><input type="text" id="form-name" placeholder="상호명"></div>
+      <div class="form-group"><label class="form-label">상태</label><input type="text" id="form-state" placeholder="장기렌탈/단기렌탈/양도 등"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">구분</label>
+        <select id="form-gubun">
+          <option value="">선택</option>
+          <option value="강북">강북</option>
+          <option value="로운">로운</option>
+          <option value="코젠">코젠</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">대표자</label><input type="text" id="form-rep" placeholder="대표자명"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">연락처</label><input type="text" id="form-tel" placeholder="031-000-0000"></div>
+      <div class="form-group"><label class="form-label">연락처2</label><input type="text" id="form-tel2" placeholder="010-0000-0000"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">연락처3</label><input type="text" id="form-tel3" placeholder="010-0000-0000"></div>
+      <div class="form-group"><label class="form-label">출고일</label><input type="date" id="form-date"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">모델명</label><input type="text" id="form-model" placeholder="FB15-12(834386)"></div>
+      <div class="form-group"><label class="form-label">옵션</label><input type="text" id="form-option" placeholder="Hi-3.5, SS 등"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">가격</label><input type="text" id="form-price" placeholder="가격"></div>
+      <div class="form-group"><label class="form-label">배터리</label><input type="text" id="form-battery" placeholder="배터리 정보"></div>
+    </div>
+    <div class="form-group"><label class="form-label">주소</label><input type="text" id="form-addr" placeholder="주소"></div>
+    <div class="form-group"><label class="form-label">기타내용</label><textarea id="form-memo" placeholder="기타 내용"></textarea></div>
+    <div class="form-group">
+      <label class="form-label">첨부파일 URL (계약서)</label>
+      <input type="text" id="form-file-url-input" placeholder="OneDrive 또는 구글 드라이브 공유 링크">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" onclick="saveCustomer()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Apps Script API URL ──
+var API_URL = 'https://script.google.com/macros/s/AKfycbxzXb7hx4vDkvYJIkEbeWZBZu5CiKeuLqN6yw2dWt4S2Bitu_2n8iGVlIl168YHg2GNVQ/exec';
+
+var allData = [];
+var allCustomers = [];
+var allRepairs = [];
+var editingRow = null;
+var existingFileUrl = '';
+
+// ── JSONP 방식으로 GET 요청 (CORS 우회) + 자동 재시도 ──
+function apiGetOnce(action) {
+  return new Promise(function(resolve, reject) {
+    var callbackName = 'cb_' + Date.now() + '_' + Math.floor(Math.random()*10000);
+    var script = document.createElement('script');
+    var done = false;
+
+    var timeout = setTimeout(function() {
+      if (done) return;
+      done = true;
+      delete window[callbackName];
+      if (document.body.contains(script)) document.body.removeChild(script);
+      reject(new Error('요청 시간 초과'));
+    }, 20000);
+
+    window[callbackName] = function(data) {
+      if (done) return;
+      done = true;
+      clearTimeout(timeout);
+      delete window[callbackName];
+      if (document.body.contains(script)) document.body.removeChild(script);
+      resolve(data);
+    };
+
+    script.src = API_URL + '?action=' + action + '&callback=' + callbackName + '&t=' + Date.now();
+    script.onerror = function() {
+      if (done) return;
+      done = true;
+      clearTimeout(timeout);
+      delete window[callbackName];
+      if (document.body.contains(script)) document.body.removeChild(script);
+      reject(new Error('네트워크 오류'));
+    };
+    document.body.appendChild(script);
+  });
+}
+
+function apiGet(action) {
+  return apiGetOnce(action).catch(function(err) {
+    console.log('1차 실패, 재시도 중... (' + err.message + ')');
+    return apiGetOnce(action);
+  });
+}
+
+// ── POST 요청 (no-cors 방식) ──
+function apiPost(action, data) {
+  return fetch(API_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: action, data: data })
+  }).then(function() {
+    return { success: true };
+  });
+}
+
+function apiPostDelete(rowNum) {
+  return fetch(API_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'deleteCustomer', rowNum: rowNum })
+  }).then(function() {
+    return { success: true };
+  });
+}
+
+function loadData() {
+  showRaw('loading');
+
+  // 거래처만 기다렸다가 앱 표시
+  apiGet('getCustomers')
+    .then(function(d) {
+      allCustomers = d || [];
+      renderCustomers();
+      showPage('customers');
+    })
+    .catch(function(err) { document.getElementById('error-msg').textContent = err.message || '오류'; showRaw('error'); });
+
+  // 수리 데이터는 백그라운드에서 별도 로드
+  apiGet('getRepairs')
+    .then(function(d) { allRepairs = d || []; })
+    .catch(function() { allRepairs = []; });
+}
+
+function showRaw(id) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('page-' + id).classList.add('active');
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('page-' + id).classList.add('active');
+  var ab = document.getElementById('add-btn');
+  if (ab) ab.style.display = (id === 'customers') ? 'flex' : 'none';
+}
+
+
+
+
+
+function sbdg(s) {
+  var cls = s === '강북' ? 's-강북' : s === '로운' ? 's-로운' : s === '코젠' ? 's-코젠' : '';
+  if (!cls) return '';
+  return '<span class="sbadge ' + cls + '">' + s + '</span>';
+}
+function gbdg(g) {
+  var cls = g === '장기' ? 'g-장기' : g === '연납' ? 'g-연납' : g === '단기' ? 'g-단기' : '';
+  if (!cls) return '';
+  return '<span class="gbadge ' + cls + '">' + g + '</span>';
+}
+function bdg(type) {
+  var cls = type === '별' ? 'b-별' : type === '포' ? 'b-포' : type === 'X' ? 'b-X' : 'b-etc';
+  var lbl = type === '별' ? '별도' : type === '포' ? '포함' : type === 'X' ? '현금' : (type || '—');
+  return '<span class="badge ' + cls + '">' + lbl + '</span>';
+}
+function e(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+
+
+
+// ── 거래처 ──
+function citem(icon, label, value, wide) {
+  return '<div class="ccard-item' + (wide ? ' ccard-wide' : '') + '">' +
+    '<div class="ccard-icon">' + icon + '</div>' +
+    '<div><div class="ccard-ilabel">' + label + '</div><div class="ccard-ivalue">' + e(value || '') + '</div></div>' +
+    '</div>';
+}
+
+function renderCustomers() {
+  var q = (document.getElementById('customer-search').value || '').toLowerCase();
+  var list = allCustomers.filter(function(c) {
+    return (c['상호명'] || '').toLowerCase().indexOf(q) >= 0 ||
+           (c['대표자'] || '').toLowerCase().indexOf(q) >= 0 ||
+           (c['연락처'] || '').indexOf(q) >= 0 ||
+           (c['연락처2'] || '').indexOf(q) >= 0 ||
+           (c['모델명'] || '').toLowerCase().indexOf(q) >= 0;
+  });
+  document.getElementById('customer-count').textContent = '총 ' + list.length + '개 거래처';
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    var c = list[i];
+    var rentals = getRentalItems(c['상호명']);
+    var rentals = getRentalItems(c['상호명']);
+    var rb = rentals.length > 0 ? '<span class="badge b-rental">렌탈중 ' + rentals.length + '대</span>' : '';
+    html += '<div class="ccard" onclick="showCustomerDetail(' + i + ')">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">';
+    html += '<div><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">';
+    html += '<span class="ccard-name">' + e(c['상호명']) + '</span>' + rb + '</div>';
+    html += '<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">';
+    html += sbdg(c['구분']);
+    if (c['대표자']) html += '<span style="font-size:12px;color:#555">👤 ' + e(c['대표자']) + '</span>';
+    if (c['연락처']) html += '<span style="font-size:12px;color:#555">📞 ' + e(c['연락처']) + '</span>';
+    html += '</div></div></div>';
+    html += '<div class="ccard-grid">';
+    html += citem('📋', '상태', c['상태'] || '');
+    html += citem('📅', '출고일', c['출고일'] || '');
+    html += citem('🏗', '모델명', c['모델명'] || '');
+    html += citem('⚙️', '옵션', c['옵션'] || '');
+    html += citem('📍', '주소', c['주소'], true);
+    html += '</div></div>';
+  }
+  document.getElementById('customer-list').innerHTML = html || '<div style="text-align:center;padding:40px;color:#888">등록된 거래처가 없습니다</div>';
+  window._cl = list;
+}
+
+function buildRepairTableHtml(repairs) {
+  if (repairs === null) return '<div style="font-size:13px;color:#888;padding:8px 0">불러오는 중...</div>';
+  if (repairs.length === 0) return '<div style="font-size:13px;color:#bbb;padding:8px 0">수리 이력이 없습니다</div>';
+  var h = '<div style="overflow-x:auto"><table class="repair-table">';
+  h += '<thead><tr><th>날짜</th><th>업체</th><th>내역</th><th>미납액</th><th>납부액</th><th>납부</th><th>납부일자</th><th>비고</th></tr></thead><tbody>';
+  for (var j = 0; j < repairs.length; j++) {
+    var rp = repairs[j];
+    var mipnap = rp['미납액'] ? '<span class="repair-amt-red">' + e(rp['미납액']) + '</span>' : '—';
+    var napbu  = rp['납부액'] ? '<span class="repair-amt-blue">' + e(rp['납부액']) + '</span>' : '—';
+    h += '<tr>';
+    h += '<td style="white-space:nowrap">' + e(rp['날짜'] || '—') + '</td>';
+    h += '<td style="white-space:nowrap;color:#555">' + e(rp['업체'] || '—') + '</td>';
+    h += '<td>' + e(rp['내역'] || '—') + '</td>';
+    h += '<td style="text-align:right;white-space:nowrap">' + mipnap + '</td>';
+    h += '<td style="text-align:right;white-space:nowrap">' + napbu + '</td>';
+    h += '<td style="white-space:nowrap">' + e(rp['납부'] || '—') + '</td>';
+    h += '<td style="white-space:nowrap">' + e(rp['납부일자'] || '—') + '</td>';
+    h += '<td>' + e(rp['비고'] || '') + '</td>';
+    h += '</tr>';
+  }
+  h += '</tbody></table></div>';
+  return h;
+}
+
+function buildCustomerDetailHtml(c, idx, rentals, repairs) {
+  var rb = rentals.length > 0 ? '<span class="badge b-rental" style="font-size:13px;padding:5px 12px">렌탈중 ' + rentals.length + '대</span>' : '';
+  var phones = '';
+  if (c['연락처'])  phones += '<a href="tel:' + e(c['연락처']) + '" class="phone-btn">📞 ' + e(c['연락처']) + '</a>';
+  if (c['연락처2']) phones += '<a href="tel:' + e(c['연락처2']) + '" class="phone-btn">📞 ' + e(c['연락처2']) + '</a>';
+  if (c['연락처3']) phones += '<a href="tel:' + e(c['연락처3']) + '" class="phone-btn">📞 ' + e(c['연락처3']) + '</a>';
+  var fileHtml = c['첨부파일URL'] ? '<button onclick="window.open(\'' + e(c['첨부파일URL']) + '\',\'_blank\')" style="padding:10px 18px;border-radius:8px;border:1px solid #ddd;background:#f8f8f8;font-size:14px;cursor:pointer">📄 계약서 보기</button>' : '';
+  var fields = [
+    ['상태', c['상태']], ['구분', c['구분']], ['모델명', c['모델명']], ['출고일', c['출고일']],
+    ['옵션', c['옵션']], ['가격', c['가격'] ? c['가격'] + '만원' : ''], ['배터리', c['배터리']]
+  ];
+  var fh = fields.map(function(f) {
+    return f[1] ? '<div class="fitem"><div class="flabel">' + e(f[0]) + '</div><div class="fvalue">' + e(f[1]) + '</div></div>' : '';
+  }).join('');
+
+  var rItemsHtml = '';
+  for (var i = 0; i < rentals.length; i++) {
+    var r = rentals[i];
+    var sno = r['S/NO'] ? ' (' + e(r['S/NO']) + ')' : '';
+    rItemsHtml += '<div class="ritem"><div style="display:flex;justify-content:space-between;align-items:center">';
+    rItemsHtml += '<div><div style="font-size:13px;font-weight:500;display:flex;align-items:center;gap:4px">' + sbdg(r['사업자']) + '<span>' + e(r['MODEL']) + sno + '</span></div>';
+    rItemsHtml += '<div style="font-size:11px;color:#888">렌탈 ' + e(r['렌탈일'] || '—') + ' · 결제 ' + e(r['결제일'] || '—') + '</div></div>';
+    rItemsHtml += '<div style="text-align:right;flex-shrink:0;margin-left:8px"><div style="font-size:13px;font-weight:500">' + e(r['금액']) + '만원</div>' + bdg(r['부가세']) + '</div>';
+    rItemsHtml += '</div></div>';
+  }
+
+  var repairHtml = buildRepairTableHtml(repairs);
+
+  var html = '<div class="dheader">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">';
+  html += '<div><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px"><span class="dname">' + e(c['상호명']) + '</span>' + rb + '</div>';
+  html += sbdg(c['구분']);
+  if (c['상태']) html += '<span style="font-size:12px;color:#888;margin-left:6px">' + e(c['상태']) + '</span>';
+  html += '</div></div>';
+  if (c['대표자']) html += '<div style="font-size:14px;color:#555;margin-bottom:10px">👤 대표자: <strong>' + e(c['대표자']) + '</strong></div>';
+  if (c['주소']) {
+    var naverUrl = 'https://map.naver.com/p/search/' + encodeURIComponent(c['주소']);
+    var tmapUrl = 'tmap://search?name=' + encodeURIComponent(c['주소']);
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">';
+    html += '<span style="font-size:13px;color:#555">📍 ' + e(c['주소']) + '</span>';
+    html += '<a href="' + naverUrl + '" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:6px;background:#03C75A;color:#fff;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap">🗺 네이버지도</a>';
+    html += '<a href="' + tmapUrl + '" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:6px;background:#FF6600;color:#fff;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap">🚗 티맵</a>';
+    html += '</div>';
+  }
+  html += '<div style="display:flex;flex-wrap:wrap;gap:8px">' + phones + '</div>';
+  html += '</div>';
+  html += '<div class="section"><div class="stitle">계약 정보</div><div class="fgrid">' + fh + '</div></div>';
+  if (c['기타내용']) html += '<div class="section"><div class="stitle">기타내용</div><div style="font-size:13px;line-height:1.7;white-space:pre-wrap">' + e(c['기타내용']) + '</div></div>';
+  if (fileHtml) html += '<div class="section"><div class="stitle">첨부파일</div>' + fileHtml + '</div>';
+  if (rentals.length > 0) html += '<div class="section"><div class="stitle">현재 렌탈 내역</div>' + rItemsHtml + '</div>';
+  html += '<div class="section" id="repair-section"><div class="stitle">🔧 수리 이력</div>' + repairHtml + '</div>';
+  html += '<div class="btn-row"><button class="btn btn-secondary" onclick="openEditModal(' + idx + ')">✏️ 수정</button><button class="btn btn-danger" onclick="deleteCustomerItem(' + idx + ')">🗑 삭제</button></div>';
+  return html;
+}
+
+function showCustomerDetail(idx) {
+  var c = window._cl[idx];
+  if (!c) return;
+  var rentals = getRentalItems(c['상호명']);
+
+  var bizName = c['상호명'].trim();
+
+  function getMatched() {
+    return allRepairs.filter(function(rp) {
+      var rpBiz = (rp['업체'] || '').trim();
+      return rpBiz.indexOf(bizName) >= 0 || bizName.indexOf(rpBiz) >= 0;
+    });
+  }
+
+  // 수리 데이터가 아직 안 왔으면 null(로딩중) 표시 후 완료 시 업데이트
+  var repairsReady = allRepairs.length > 0;
+  document.getElementById('customer-detail-content').innerHTML = buildCustomerDetailHtml(c, idx, rentals, repairsReady ? getMatched() : null);
+  showRaw('customer-detail');
+  window.scrollTo(0, 0);
+
+  if (!repairsReady) {
+    var poll = setInterval(function() {
+      if (allRepairs.length > 0) {
+        clearInterval(poll);
+        var repairSection = document.getElementById('repair-section');
+        if (!repairSection) return;
+        var matched = getMatched();
+        var repairHtml = buildRepairTableHtml(matched);
+        repairSection.innerHTML = '<div class="stitle">🔧 수리 이력 <span style="font-size:11px;font-weight:400;color:#aaa">(' + matched.length + '건)</span></div>' + repairHtml;
+      }
+    }, 300);
+    // 15초 후 포기
+    setTimeout(function() { clearInterval(poll); }, 15000);
+  }
+}
+
+function openAddModal() {
+  editingRow = null; existingFileUrl = '';
+  document.getElementById('modal-title').textContent = '거래처 추가';
+  ['form-name','form-state','form-rep','form-tel','form-tel2','form-tel3',
+   'form-model','form-option','form-price','form-battery','form-addr','form-memo','form-file-url-input'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('form-date').value = '';
+  document.getElementById('form-gubun').value = '';
+  document.getElementById('customer-modal').classList.add('show');
+}
+
+function openEditModal(idx) {
+  var c = window._cl[idx];
+  if (!c) return;
+  editingRow = c.row; existingFileUrl = c['첨부파일URL'] || '';
+  document.getElementById('modal-title').textContent = '거래처 수정';
+  document.getElementById('form-row').value = c.row;
+  document.getElementById('form-name').value = c['상호명'] || '';
+  document.getElementById('form-state').value = c['상태'] || '';
+  document.getElementById('form-gubun').value = c['구분'] || '';
+  document.getElementById('form-rep').value = c['대표자'] || '';
+  document.getElementById('form-tel').value = c['연락처'] || '';
+  document.getElementById('form-tel2').value = c['연락처2'] || '';
+  document.getElementById('form-tel3').value = c['연락처3'] || '';
+  document.getElementById('form-model').value = c['모델명'] || '';
+  document.getElementById('form-date').value = c['출고일'] || '';
+  document.getElementById('form-option').value = c['옵션'] || '';
+  document.getElementById('form-price').value = c['가격'] || '';
+  document.getElementById('form-battery').value = c['배터리'] || '';
+  document.getElementById('form-addr').value = c['주소'] || '';
+  document.getElementById('form-memo').value = c['기타내용'] || '';
+  document.getElementById('form-file-url-input').value = existingFileUrl;
+  document.getElementById('customer-modal').classList.add('show');
+}
+
+function closeModal() { document.getElementById('customer-modal').classList.remove('show'); }
+
+function saveCustomer() {
+  var name = document.getElementById('form-name').value.trim();
+  if (!name) { showToast('상호명을 입력해주세요'); return; }
+  var data = {
+    row:         editingRow,
+    상호명:      name,
+    상태:        document.getElementById('form-state').value.trim(),
+    구분:        document.getElementById('form-gubun').value,
+    대표자:      document.getElementById('form-rep').value.trim(),
+    연락처:      document.getElementById('form-tel').value.trim(),
+    연락처2:     document.getElementById('form-tel2').value.trim(),
+    연락처3:     document.getElementById('form-tel3').value.trim(),
+    모델명:      document.getElementById('form-model').value.trim(),
+    옵션:        document.getElementById('form-option').value.trim(),
+    출고일:      document.getElementById('form-date').value,
+    가격:        document.getElementById('form-price').value.trim(),
+    주소:        document.getElementById('form-addr').value.trim(),
+    기타내용:    document.getElementById('form-memo').value.trim(),
+    배터리:      document.getElementById('form-battery').value.trim(),
+    첨부파일URL: document.getElementById('form-file-url-input').value.trim() || existingFileUrl
+  };
+  showToast('저장 중...');
+  var action = editingRow ? 'updateCustomer' : 'addCustomer';
+  apiPost(action, data)
+    .then(function() { showToast('저장 완료!'); closeModal(); reloadCustomers(); })
+    .catch(function() { showToast('저장 실패'); });
+}
+
+function deleteCustomerItem(idx) {
+  var c = window._cl[idx];
+  if (!c) return;
+  if (!confirm(c['상호명'] + ' 거래처를 삭제할까요?')) return;
+  apiPostDelete(c.row)
+    .then(function() { showToast('삭제 완료!'); showPage('customers'); reloadCustomers(); })
+    .catch(function() { showToast('삭제 실패'); });
+}
+
+function reloadCustomers() {
+  apiGet('getCustomers')
+    .then(function(d) { allCustomers = d || []; renderCustomers(); })
+    .catch(function() { showToast('새로고침 실패'); });
+}
+
+window.onload = loadData;
+</script>
+</body>
+</html>
