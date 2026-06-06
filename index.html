@@ -169,6 +169,10 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbxzXb7hx4vDkvYJIkEbeWZBZu
 var allData = [];
 var allCustomers = [];
 var allRepairs = [];
+
+function getRentalItems(bizName) {
+  return allData.filter(function(r) { return (r['업체'] || '').split('/')[0].trim() === bizName; });
+}
 var editingRow = null;
 var existingFileUrl = '';
 
@@ -322,7 +326,6 @@ function renderCustomers() {
   var html = '';
   for (var i = 0; i < list.length; i++) {
     var c = list[i];
-    var rentals = getRentalItems(c['상호명']);
     var rentals = getRentalItems(c['상호명']);
     var rb = rentals.length > 0 ? '<span class="badge b-rental">렌탈중 ' + rentals.length + '대</span>' : '';
     html += '<div class="ccard" onclick="showCustomerDetail(' + i + ')">';
