@@ -98,9 +98,10 @@ textarea{resize:vertical;min-height:80px}
 
   <div id="page-customers" class="page">
     <div style="font-size:18px;font-weight:600;margin-bottom:14px">거래처 관리</div>
-    <input type="text" class="search-wrap" id="customer-search" placeholder="상호명, 대표자, 연락처, 모델명 검색..." oninput="renderCustomers()">
+    <input type="text" class="search-wrap" id="customer-search" placeholder="상호명, 대표자, 연락처, 모델명 검색..." oninput="renderCustomers(true)">
     <div class="clabel" id="customer-count"></div>
     <div id="customer-list"></div>
+    <div id="customer-pagination"></div>
     <button class="add-btn" id="add-btn" onclick="openAddModal()">+</button>
   </div>
 
@@ -169,6 +170,8 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbxzXb7hx4vDkvYJIkEbeWZBZu
 var allData = [];
 var allCustomers = [];
 var allRepairs = [];
+var currentPage = 1;
+var PAGE_SIZE = 20;
 
 function getRentalItems(bizName) {
   return allData.filter(function(r) { return (r['업체'] || '').split('/')[0].trim() === bizName; });
@@ -250,7 +253,7 @@ function loadData() {
   apiGet('getCustomers')
     .then(function(d) {
       allCustomers = d || [];
-      renderCustomers();
+      renderCustomers(true);
       showPage('customers');
     })
     .catch(function(err) { document.getElementById('error-msg').textContent = err.message || '오류'; showRaw('error'); });
@@ -313,7 +316,8 @@ function citem(icon, label, value, wide) {
     '</div>';
 }
 
-function renderCustomers() {
+function renderCustomers(resetPage) {
+  if (resetPage) currentPage = 1;
   var q = (document.getElementById('customer-search').value || '').toLowerCase();
   var list = allCustomers.filter(function(c) {
     return (c['상호명'] || '').toLowerCase().indexOf(q) >= 0 ||
@@ -327,13 +331,20 @@ function renderCustomers() {
     var db = b['출고일'] ? new Date(b['출고일']) : new Date(0);
     return db - da;
   });
+  window._cl = list;
+  var totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = totalPages;
+  var start = (currentPage - 1) * PAGE_SIZE;
+  var pageList = list.slice(start, start + PAGE_SIZE);
+
   document.getElementById('customer-count').textContent = '총 ' + list.length + '개 거래처';
   var html = '';
-  for (var i = 0; i < list.length; i++) {
-    var c = list[i];
+  for (var i = 0; i < pageList.length; i++) {
+    var c = pageList[i];
+    var globalIdx = start + i;
     var rentals = getRentalItems(c['상호명']);
     var rb = rentals.length > 0 ? '<span class="badge b-rental">렌탈중 ' + rentals.length + '대</span>' : '';
-    html += '<div class="ccard" onclick="showCustomerDetail(' + i + ')">';
+    html += '<div class="ccard" onclick="showCustomerDetail(' + globalIdx + ')">';
     html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">';
     html += '<div><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">';
     html += '<span class="ccard-name">' + e(c['상호명']) + '</span>' + rb + '</div>';
@@ -350,8 +361,45 @@ function renderCustomers() {
     html += citem('📍', '주소', c['주소'], true);
     html += '</div></div>';
   }
-  document.getElementById('customer-list').innerHTML = html || '<div style="text-align:center;padding:40px;color:#888">등록된 거래처가 없습니다</div>';
-  window._cl = list;
+  if (!html) html = '<div style="text-align:center;padding:40px;color:#888">등록된 거래처가 없습니다</div>';
+  document.getElementById('customer-list').innerHTML = html;
+
+  // 페이지네이션 렌더
+  document.getElementById('customer-pagination').innerHTML = totalPages > 1 ? buildPagination(currentPage, totalPages) : '';
+}
+
+function buildPagination(cur, total) {
+  // 현재 페이지 주변 5개 + 처음/끝
+  var pages = [];
+  var start = Math.max(1, cur - 2);
+  var end = Math.min(total, cur + 2);
+  if (start > 1) { pages.push(1); if (start > 2) pages.push('...'); }
+  for (var p = start; p <= end; p++) pages.push(p);
+  if (end < total) { if (end < total - 1) pages.push('...'); pages.push(total); }
+
+  var h = '<div style="display:flex;align-items:center;justify-content:center;gap:4px;padding:16px 0;flex-wrap:wrap">';
+  // 이전
+  h += '<button onclick="goPage(' + (cur-1) + ')" ' + (cur===1?'disabled':'') + ' style="padding:7px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;color:#555;' + (cur===1?'opacity:.4':'') + '">‹</button>';
+  for (var i = 0; i < pages.length; i++) {
+    if (pages[i] === '...') {
+      h += '<span style="padding:7px 4px;color:#aaa;font-size:13px">…</span>';
+    } else {
+      var active = pages[i] === cur;
+      h += '<button onclick="goPage(' + pages[i] + ')" style="padding:7px 12px;border-radius:8px;border:1px solid ' + (active?'#1a56db':'#ddd') + ';background:' + (active?'#1a56db':'#fff') + ';color:' + (active?'#fff':'#555') + ';font-size:13px;font-weight:' + (active?'600':'400') + ';cursor:pointer;min-width:36px">' + pages[i] + '</button>';
+    }
+  }
+  // 다음
+  h += '<button onclick="goPage(' + (cur+1) + ')" ' + (cur===total?'disabled':'') + ' style="padding:7px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;color:#555;' + (cur===total?'opacity:.4':'') + '">›</button>';
+  h += '</div>';
+  return h;
+}
+
+function goPage(p) {
+  var total = Math.max(1, Math.ceil(window._cl.length / PAGE_SIZE));
+  if (p < 1 || p > total) return;
+  currentPage = p;
+  renderCustomers();
+  window.scrollTo(0, 0);
 }
 
 function buildRepairTableHtml(repairs) {
