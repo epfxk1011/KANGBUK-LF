@@ -322,6 +322,11 @@ function renderCustomers() {
            (c['연락처2'] || '').indexOf(q) >= 0 ||
            (c['모델명'] || '').toLowerCase().indexOf(q) >= 0;
   });
+  list.sort(function(a, b) {
+    var da = a['출고일'] ? new Date(a['출고일']) : new Date(0);
+    var db = b['출고일'] ? new Date(b['출고일']) : new Date(0);
+    return db - da;
+  });
   document.getElementById('customer-count').textContent = '총 ' + list.length + '개 거래처';
   var html = '';
   for (var i = 0; i < list.length; i++) {
