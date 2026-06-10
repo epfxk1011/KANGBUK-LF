@@ -78,9 +78,28 @@ textarea{resize:vertical;min-height:80px}
 .no-badge{font-size:10px;background:#f1f3f4;color:#888;padding:2px 6px;border-radius:4px;font-weight:500}
 /* 첨부파일 없음 안내 */
 .file-pending{display:inline-block;padding:8px 14px;border-radius:8px;border:1px dashed #ddd;background:#fafafa;font-size:13px;color:#aaa}
+/* 잠금 화면 */
+#lock-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:#f5f5f7;z-index:9999;display:flex;align-items:center;justify-content:center}
+.lock-box{background:#fff;border-radius:20px;padding:36px 28px;width:100%;max-width:360px;margin:0 16px;box-shadow:0 4px 24px rgba(0,0,0,.08);text-align:center}
+.lock-logo{font-size:28px;font-weight:700;margin-bottom:6px}.lock-logo span{color:#1a56db}
+.lock-sub{font-size:13px;color:#aaa;margin-bottom:28px}
+.lock-input{width:100%;padding:14px;border-radius:10px;border:1px solid #ddd;font-size:16px;text-align:center;letter-spacing:4px;outline:none;font-family:inherit}
+.lock-input:focus{border-color:#1a56db}
+.lock-btn{margin-top:12px;width:100%;padding:14px;border-radius:10px;border:none;background:#1a56db;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.lock-err{font-size:13px;color:#ef4444;margin-top:10px;min-height:20px}
 </style>
 </head>
 <body>
+<!-- 잠금 화면 -->
+<div id="lock-screen">
+  <div class="lock-box">
+    <div class="lock-logo"><span>강북</span>L&F</div>
+    <div class="lock-sub">관리시스템</div>
+    <input type="password" class="lock-input" id="lock-pw" placeholder="비밀번호" maxlength="20" onkeydown="if(event.key==='Enter')checkLock()">
+    <button class="lock-btn" onclick="checkLock()">입장</button>
+    <div class="lock-err" id="lock-err"></div>
+  </div>
+</div>
 <div class="header">
   <div class="header-title"><span>강북</span>L&F</div>
   <button class="refresh-btn" onclick="loadData()">🔄</button>
@@ -583,7 +602,40 @@ function reloadCustomers() {
     .catch(function() { showToast('새로고침 실패'); });
 }
 
-window.onload = loadData;
+// ── 잠금 화면 ──
+// 비밀번호를 바꾸려면 아래 LOCK_PW 값을 수정하세요
+var LOCK_PW = '1201';
+// 잠금 유지 기간 (밀리초) — 현재 180일
+var LOCK_EXPIRE_MS = 180 * 24 * 60 * 60 * 1000;
+var LOCK_KEY = 'kblf_auth';
+
+function checkLock() {
+  var pw = document.getElementById('lock-pw').value;
+  if (pw === LOCK_PW) {
+    var expire = Date.now() + LOCK_EXPIRE_MS;
+    localStorage.setItem(LOCK_KEY, String(expire));
+    document.getElementById('lock-screen').style.display = 'none';
+    loadData();
+  } else {
+    var errEl = document.getElementById('lock-err');
+    errEl.textContent = '비밀번호가 틀렸습니다';
+    document.getElementById('lock-pw').value = '';
+    document.getElementById('lock-pw').focus();
+    setTimeout(function(){ errEl.textContent = ''; }, 2000);
+  }
+}
+
+window.onload = function() {
+  var stored = localStorage.getItem(LOCK_KEY);
+  if (stored && Date.now() < parseInt(stored)) {
+    // 인증된 기기 — 잠금 화면 숨기고 바로 입장
+    document.getElementById('lock-screen').style.display = 'none';
+    loadData();
+  } else {
+    // 미인증 — 잠금 화면 표시, 비밀번호 입력 대기
+    document.getElementById('lock-pw').focus();
+  }
+};
 </script>
 </body>
 </html>
