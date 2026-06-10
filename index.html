@@ -307,8 +307,12 @@ function e(s) {
 function hl(s, q) {
   var escaped = e(s);
   if (!q || q.length < 1) return escaped;
-  var eq = q.replace(/[.*+?^${}()|[\]\]/g, '\$&');
-  return escaped.replace(new RegExp('(' + eq + ')', 'gi'), '<mark class="hl">$1</mark>');
+  try {
+    var eq = q.replace(/[-[\]{}()*+?.,\^$|#\s]/g, '\$&');
+    return escaped.replace(new RegExp('(' + eq + ')', 'gi'), '<mark class="hl">$1</mark>');
+  } catch(err) {
+    return escaped;
+  }
 }
 
 function showToast(msg) {
