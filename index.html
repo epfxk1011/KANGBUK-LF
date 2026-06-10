@@ -353,7 +353,6 @@ function renderCustomers(resetPage) {
     html += '<span class="ccard-name">' + e(c['상호명']) + '</span>';
     // NO 표시
     if (c['NO'] && String(c['NO']).trim() && String(c['NO']).trim() !== '0') {
-      html += '<span class="no-badge">NO.' + e(c['NO']) + '</span>';
     }
     if (fileIcon) html += '<span' + fileTip + ' style="font-size:14px">' + fileIcon + '</span>';
     html += '</div>';
@@ -478,7 +477,6 @@ function buildCustomerDetailHtml(c, idx, repairs) {
   html += '<span class="dname">'+e(c['상호명'])+'</span>';
   // NO 표시
   if (c['NO'] && String(c['NO']).trim() && String(c['NO']).trim() !== '0') {
-    html += '<span class="no-badge">NO.'+e(c['NO'])+'</span>';
   }
   html += '</div>';
   html += sbdg(c['구분']);
