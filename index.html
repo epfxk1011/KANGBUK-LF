@@ -87,6 +87,8 @@ textarea{resize:vertical;min-height:80px}
 .lock-input:focus{border-color:#1a56db}
 .lock-btn{margin-top:12px;width:100%;padding:14px;border-radius:10px;border:none;background:#1a56db;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
 .lock-err{font-size:13px;color:#ef4444;margin-top:10px;min-height:20px}
+/* 검색 하이라이트 */
+.hl{background:#fff176;border-radius:2px;font-weight:700}
 </style>
 </head>
 <body>
@@ -301,6 +303,14 @@ function e(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// 검색어 하이라이트: 텍스트를 escape한 뒤 검색어 부분에 <mark> 적용
+function hl(s, q) {
+  var escaped = e(s);
+  if (!q || q.length < 1) return escaped;
+  var eq = q.replace(/[.*+?^${}()|[\]\]/g, '\$&');
+  return escaped.replace(new RegExp('(' + eq + ')', 'gi'), '<mark class="hl">$1</mark>');
+}
+
 function showToast(msg) {
   var t = document.getElementById('toast');
   t.textContent = msg;
@@ -309,10 +319,10 @@ function showToast(msg) {
 }
 
 // ── 거래처 목록 렌더 ──
-function citem(icon, label, value, wide) {
+function citem(icon, label, value, wide, q) {
   return '<div class="ccard-item' + (wide?' ccard-wide':'') + '">' +
     '<div class="ccard-icon">' + icon + '</div>' +
-    '<div><div class="ccard-ilabel">' + label + '</div><div class="ccard-ivalue">' + e(value||'') + '</div></div>' +
+    '<div><div class="ccard-ilabel">' + label + '</div><div class="ccard-ivalue">' + hl(value||'', q) + '</div></div>' +
     '</div>';
 }
 
@@ -350,7 +360,7 @@ function renderCustomers(resetPage) {
     html += '<div class="ccard" onclick="showCustomerDetail(' + globalIdx + ')">';
     html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">';
     html += '<div><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">';
-    html += '<span class="ccard-name">' + e(c['상호명']) + '</span>';
+    html += '<span class="ccard-name">' + hl(c['상호명'], q) + '</span>';
     // NO 표시
     if (c['NO'] && String(c['NO']).trim() && String(c['NO']).trim() !== '0') {
     }
@@ -358,17 +368,17 @@ function renderCustomers(resetPage) {
     html += '</div>';
     html += '<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">';
     html += sbdg(c['구분']);
-    if (c['대표자']) html += '<span style="font-size:12px;color:#555">👤 ' + e(c['대표자']) + '</span>';
-    if (c['연락처'])  html += '<span style="font-size:12px;color:#555">📞 ' + e(c['연락처']) + '</span>';
-    if (c['연락처2']) html += '<span style="font-size:12px;color:#888">· ' + e(c['연락처2']) + '</span>';
-    if (c['연락처3']) html += '<span style="font-size:12px;color:#888">· ' + e(c['연락처3']) + '</span>';
+    if (c['대표자']) html += '<span style="font-size:12px;color:#555">👤 ' + hl(c['대표자'], q) + '</span>';
+    if (c['연락처'])  html += '<span style="font-size:12px;color:#555">📞 ' + hl(c['연락처'], q) + '</span>';
+    if (c['연락처2']) html += '<span style="font-size:12px;color:#888">· ' + hl(c['연락처2'], q) + '</span>';
+    if (c['연락처3']) html += '<span style="font-size:12px;color:#888">· ' + hl(c['연락처3'], q) + '</span>';
     html += '</div></div></div>';
     html += '<div class="ccard-grid">';
-    html += citem('📋','상태',c['상태']||'');
-    html += citem('📅','출고일',c['출고일']||'');
-    html += citem('🏗','모델명',c['모델명']||'');
-    html += citem('⚙️','옵션',c['옵션']||'');
-    if (c['주소']) html += citem('📍','주소',c['주소'],true);
+    html += citem('📋','상태',c['상태']||'',false,q);
+    html += citem('📅','출고일',c['출고일']||'',false,q);
+    html += citem('🏗','모델명',c['모델명']||'',false,q);
+    html += citem('⚙️','옵션',c['옵션']||'',false,q);
+    if (c['주소']) html += citem('📍','주소',c['주소'],true,q);
     html += '</div></div>';
   }
   if (!html) html = '<div style="text-align:center;padding:40px;color:#888">등록된 거래처가 없습니다</div>';
