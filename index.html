@@ -338,6 +338,7 @@ function renderCustomers(resetPage) {
            (c['대표자']||'').toLowerCase().indexOf(q)>=0 ||
            (c['연락처']||'').indexOf(q)>=0 ||
            (c['연락처2']||'').indexOf(q)>=0 ||
+           (c['연락처3']||'').indexOf(q)>=0 ||
            (c['모델명']||'').toLowerCase().indexOf(q)>=0;
   });
   list.sort(function(a,b) {
